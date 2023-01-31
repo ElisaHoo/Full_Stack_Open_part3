@@ -1,13 +1,9 @@
 const express = require('express')
 const app = express()
 
-// Node's CORS (Cross-Origin Resource Sharing) -middleware is used so that JavaScript
-// frontend code can communicate with backend server.
-// If we don't use it, an error will occur because these two have different
-// origins (frontend's port is 3000 and server's 3001 -> origin is not the same)
+// Node's CORS (Cross-Origin Resource Sharing) -middleware
 const cors = require('cors')
 
-// dotenv -library is introduced (environmental variables from .env)
 // Important: gitignore (and also dockerignore) .env-file !!
 // To set env.variable to fly.io run: flyctl secrets set MONGODB_URI='<db_address_with_password_here>'
 require('dotenv').config()
@@ -22,19 +18,14 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
-// JSON-parser = middleware. Middlewares are functions that you can use
-// to handle objects. For example JSON-parser gets raw data from the request,
-// parses it to JavaScript object and place it to request's field "body".
+// JSON-parser = middleware
 app.use(express.json())
 
 app.use(requestLogger)
 
-// this allows request from all possible origins to every backends routes
 app.use(cors())
 
 // "Static"-middleware is used to show static content (like frontend index.js)
-// Next line of code puts Express to check if there is a file that matches GET requests path in
-// the folder "build"
 app.use(express.static('build'))
 
 /*const morgan = require('morgan') // morgan is middleware that will log requests (take a look at terminal)
@@ -42,11 +33,6 @@ morgan.token('postData', function showPostData (req, res) {return JSON.stringify
 //app.use(morgan('tiny'))
 app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :postData`))*/
 
-// Defining first route: eventlistener will deal
-// HTTP GET requests which are coming to address /api/persons
-// Eventlistener-function has two params: request includes
-// all HTTP data and response defines the way how to respond
-// to the request
 // Getting everyone's phone numbers
 app.get('/api/persons', (request, response) => {
   Person.find({}).then((persons) => {
@@ -127,9 +113,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-// Express's errorhandler middleware -> it checks if the problem was CastError
-// exeption (=incorrect object id) or 'ValidationError' (=MongoDB's validation rules). If it wasn't, it transfers the errorhandling
-// to take care of by Express's default errorhandler This done using function next.
+// Express's errorhandler middleware
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
   if (error.name === 'CastError') {
@@ -143,9 +127,6 @@ const errorHandler = (error, request, response, next) => {
 }
 app.use(errorHandler)
 
-// The Express-server placed in the variable app, is bound to listen to
-// http-requests that are coming from port that is defined by environmental
-// variable or if definition hasn't been done, then port 3001
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
